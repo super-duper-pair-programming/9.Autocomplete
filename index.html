@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autocomplete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&display=block" rel="stylesheet" />
+    <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+    <link href="style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <h1 class="title">Autocomplete</h1>
+    <div class="autocomplete">
+      <div class="autocomplete-toggler">
+        <button class="autocomplete-toggle-button">
+          <span>
+            <i class="bx bx-search"></i>
+            <span class="autocomplete-title">Select a country</span>
+          </span>
+          <i class="bx bx-caret-down"></i>
+        </button>
+      </div>
+      <div class="autocomplete-suggester hide">
+        <div class="autocomplete-dropdown">
+          <input type="text" class="autocomplete-search" placeholder="Select a country" />
+          <ul class="autocomplete-suggest-list">
+            <!--
+            <li tabindex="0">
+              <span class="country">
+                <img src="images/flag/kr.svg" />
+                <span>South Korea</span>
+              </span>
+            </li>
+            <li tabindex="0">
+              <span class="country">
+                <img src="images/flag/kp.svg" />
+                <span>North Korea</span>
+              <span>
+            </li> -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
