@@ -1,23 +1,22 @@
 import countryCode from './countryCode.js';
 
+const $autocompleteToggleButton = document.querySelector('.autocomplete-toggle-button');
+const $autocompleteSearch = document.querySelector('.autocomplete-search');
+const $autocompleteSuggester = document.querySelector('.autocomplete-suggester');
 const $autocompleteSuggestList = document.querySelector('.autocomplete-suggest-list');
 
 // do something!
 // prettier-ignore
-const renderCountryList = (() => {
-  $autocompleteSuggestList.innerHTML = countryCode
-    .map(country =>
-      `<li tabindex="0">
-        <span class="country">
-          <img src="images/flag/${country[0]}.svg" />
-          <span>${country[1]}</span>
-        </span>
-      </li>`
-    ).join('');
-})();
-
-const $autocompleteSuggester = document.querySelector('.autocomplete-suggester');
-const $autocompleteSearch = document.querySelector('.autocomplete-search');
+const renderCountryList = (countryList, filterRegex) => {
+  $autocompleteSuggestList.innerHTML = countryList.length === 0
+      ? `No result matched '${$autocompleteSearch.value}'`: countryList.map(([code, country]) => `
+    <li tabindex="0">
+      <span class="country">
+        <img src="images/flag/${code}.svg" />
+        <span>${filterRegex === undefined ? country :country.replace(filterRegex, '<b>$&</b>')}</span>
+      </span>
+    </li>`).join('');
+};
 
 const toggleSuggester = () => {
   $autocompleteSuggester.classList.toggle('hide');
@@ -29,48 +28,45 @@ const closeSuggester = () => {
 };
 
 const showSelectedCountry = countryHTML => {
-  document.querySelector('.autocomplete-toggle-button').innerHTML = `
+  $autocompleteToggleButton.innerHTML = `
   ${countryHTML}
-  <i class="bx bx-caret-down"></i>
-  `;
+  <i class="bx bx-caret-down"></i>`;
 };
 
-document.querySelector('.autocomplete-toggler').addEventListener('click', toggleSuggester);
+const renderFilteredCountryList = () => {
+  const inputValue = $autocompleteSearch.value;
+  const inputValueRegex = new RegExp(inputValue, 'gi');
+  const filteredCountries = countryCode.filter(([, country]) => country.match(inputValueRegex));
 
-document.querySelector('body').addEventListener('click', e => {
+  renderCountryList(filteredCountries, inputValueRegex);
+};
+
+window.addEventListener('DOMContentLoaded', renderCountryList(countryCode));
+
+$autocompleteToggleButton.addEventListener('click', toggleSuggester);
+
+document.body.addEventListener('click', e => {
   if (e.target.matches('.autocomplete *')) return;
   closeSuggester();
 });
+
+$autocompleteSearch.addEventListener('keyup', _.debounce(renderFilteredCountryList, 100));
 
 $autocompleteSuggestList.addEventListener('keydown', e => {
   if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter') return;
 
   e.preventDefault();
-  if (e.key === 'ArrowDown') (e.target.nextElementSibling ?? e.target.parentElement.firstElementChild).focus();
-  else if (e.key === 'ArrowUp') (e.target.previousElementSibling ?? e.target.parentElement.lastElementChild).focus();
+  if (e.key === 'ArrowDown') (e.target.nextElementSibling ?? $autocompleteSuggestList.firstElementChild).focus();
+  else if (e.key === 'ArrowUp') (e.target.previousElementSibling ?? $autocompleteSuggestList.lastElementChild).focus();
   else if (e.key === 'Enter') showSelectedCountry(e.target.innerHTML);
 });
 
 $autocompleteSuggestList.addEventListener('click', e => showSelectedCountry(e.target.innerHTML));
 
-const renderFilteredCoutrtyList = (inputValue, inputValueRegex, filteredCountries) => {
-  // prettier-ignore
-  $autocompleteSuggestList.innerHTML =
-    filteredCountries.length === 0 ? `No result matched '${inputValue}'`
-      : filteredCountries.map(country =>
-        `<li tabindex="0">
-          <span class="country">
-            <img src="images/flag/${country[0]}.svg" />
-            <span>${country[1].replace(inputValueRegex, '<b>$&</b>')}</span>
-          </span>
-        </li>`).join('');
-};
-
-const filterMatchedCountries = () => {
-  const inputValue = $autocompleteSearch.value;
-  const inputValueRegex = new RegExp(inputValue, 'gi');
-  const filteredCountries = countryCode.filter(country => inputValueRegex.test(country[1]));
-  renderFilteredCoutrtyList(inputValue, inputValueRegex, filteredCountries);
-};
-
-$autocompleteSearch.addEventListener('keyup', _.debounce(filterMatchedCountries, 100));
+// [변경사항]
+// - RegExp.prototype.test() 메서드 대신 String.prototype.match() 메서드를 사용하여
+// test() 메서드 반복 호출 시 검색 결과를 이전 일치 이후부터 탐색하는 버그 해결
+// - 디스트럭쳐링 할당으로 countryList를 code와 country로 분리해 할당하여 가독성을 높임
+// - renderCountryList, toggleSuggester, closeSuggester, showSelectedCountry, renderFilteredCountryList의
+// 함수를 생성하여 event listener 내부 코드 간소화
+// - 반복되는 렌더링 코드를 통합함
